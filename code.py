@@ -1,6 +1,8 @@
 import stage
 import ugame
 
+import constants
+
 
 def game_scene():
     # this function is for the main game game_scene
@@ -10,10 +12,14 @@ def game_scene():
     image_bank_sprites = stage.Bank.from_bmp16("space_aliens.bmp")
 
     # sets the background to image 0 in the bank
-    background = stage.Grid(image_bank_background, 10, 8)
+    background = stage.Grid(
+        image_bank_background, constants.SCREEN_GRID_X, constants.SCREEN_GRID_Y
+    )
 
     # create a sprite
-    ship = stage.Sprite(image_bank_sprites, 5, 75, 66)
+    ship = stage.Sprite(
+        image_bank_sprites, 5, 75, constants.SCREEN_Y - (2 * constants.SPRITE_SIZE)
+    )
 
     # create a stage for the game
     game = stage.Stage(ugame.display, 60)
@@ -31,13 +37,19 @@ def game_scene():
         keys = ugame.buttons.get_pressed()
 
         if keys & ugame.K_RIGHT:
-            ship.move(ship.x + 1, ship.y)
+            if ship.x <= constants.SCREEN_X - constants.SPRITE_SIZE:
+                ship.move(ship.x + 1, ship.y)
+            else:
+                ship.move(constants.SCREEN_X - constants.SPRITE_SIZE, ship.y)
         if keys & ugame.K_LEFT:
-            ship.move(ship.x - 1, ship.y)
+            if ship.x >= 0:
+                ship.move(ship.x - 1, ship.y)
+            else:
+                ship.move(0, ship.y)
         if keys & ugame.K_UP:
-            ship.move(ship.x, ship.y - 1)
+            pass
         if keys & ugame.K_DOWN:
-            ship.move(ship.x, ship.y + 1)
+            pass
 
 
 if __name__ == "__main__":
