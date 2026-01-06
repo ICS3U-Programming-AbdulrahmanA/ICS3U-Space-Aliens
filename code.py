@@ -24,7 +24,20 @@ def game_scene():
 
     # repeats game forever
     while True:
-        pass
+
+        game.render_sprites([ship])
+        game.tick()
+
+        keys = ugame.buttons.get_pressed()
+
+        if keys & ugame.K_RIGHT:
+            ship.move(ship.x + 1, ship.y)
+        if keys & ugame.K_LEFT:
+            ship.move(ship.x - 1, ship.y)
+        if keys & ugame.K_UP:
+            ship.move(ship.x, ship.y - 1)
+        if keys & ugame.K_DOWN:
+            ship.move(ship.x, ship.y + 1)
 
 
 if __name__ == "__main__":
