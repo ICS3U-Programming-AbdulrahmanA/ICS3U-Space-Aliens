@@ -66,7 +66,6 @@ def splash_scene():
     # render all sprites
     # most likely you will only render the background once per game scene
     game.render_block()
-
     # repeat forever, game loop
     while True:
         # Wait 2 seconds
@@ -74,6 +73,7 @@ def splash_scene():
         menu_scene()
 
         game.tick()
+
 
 
 def menu_scene():
@@ -125,8 +125,24 @@ def menu_scene():
 
 
 def game_scene():
+
+    def show_alien():
+        for alien in aliens:
+            if alien.y < 0:
+                alien.move(
+                    random.randint(
+                        0,
+                        constants.SCREEN_X - constants.SPRITE_SIZE
+                    ),
+                    0
+                )
+                break
+
+
     # this function is the main game game_scene
 
+    score = 0
+    
     # image banks for CircuitPython
     image_bank_background = stage.Bank.from_bmp16("space_aliens_background.bmp")
     image_bank_sprites = stage.Bank.from_bmp16("space_aliens.bmp")
@@ -165,6 +181,25 @@ def game_scene():
         16,
     )
 
+    aliens = []
+    for alien_number in range(constants.TOTAL_NUMBER_OF_ALIENS):
+        a_single_alien = stage.Sprite(image_bank_sprites, 9, constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y)
+        aliens.append(a_single_alien) 
+    show_alien()
+
+    alien_spawn_timer = 0
+
+    lasers = []
+    for laser_number in range(constants.TOTAL_NUMBER_OF_LASERS):
+        a_single_laser = stage.Sprite(
+            image_bank_sprites,
+            10,
+            constants.OFF_SCREEN_X,
+            constants.OFF_SCREEN_Y
+        )
+        lasers.append(a_single_laser)
+
+
     lasers = []
     for laser_number in range(constants.TOTAL_NUMBER_OF_LASERS):
         a_single_laser = stage.Sprite(image_bank_sprites, 10, constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y)
@@ -175,7 +210,7 @@ def game_scene():
     # and set the frame rate to 60fps
     game = stage.Stage(ugame.display, constants.FPS)
     # set the layers of all sprites, items show up in order
-    game.layers = lasers + [ship] + [alien] + [background]
+    game.layers = aliens + lasers + [ship] + [background]
     # render all sprites
     # most likely you will only render the background once per game scene
     game.render_block()
@@ -184,6 +219,12 @@ def game_scene():
     while True:
         # get user input
         keys = ugame.buttons.get_pressed()
+
+        alien_spawn_timer += 1
+        if alien_spawn_timer > 60:   # about 1 second at 60 FPS
+            show_alien()
+            alien_spawn_timer = 0
+
 
         # A button to fire
         if keys & ugame.K_O != 0:
@@ -235,9 +276,39 @@ def game_scene():
                     if lasers[laser_number].y < constants.OFF_SCREEN_Y:
                         lasers[laser_number].move(constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y)
 
+        for alien_number in range(len(aliens)):
+                if aliens[alien_number].x > 0:
+                    aliens[alien_number].move(aliens[alien_number].x, aliens[alien_number].y + constants.ALIEN_SPEED)
+                    if aliens[alien_number].y > constants.SCREEN_Y:
+                        aliens[alien_number].move(
+                            constants.OFF_SCREEN_X,
+                            constants.OFF_SCREEN_Y
+                )
+                show_alien()
+
+        for laser_number in range(len(lasers)):
+            if lasers[laser_number].x > 0:
+                for alien_number in range(len(aliens)):
+                    if aliens[alien_number].x > 0:
+                        if stage.collide(lasers[laser_number].x + 6, lasers[laser_number].y + 2,
+                                        lasers[laser_number].x + 11, lasers[laser_number].y + 12,
+                                        aliens[alien_number].x + 1, aliens[alien_number].y,
+                                        aliens[alien_number].x + 15, aliens[alien_number].y + 15):
+                                        aliens[alien_number].move(constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y)
+                                        lasers[laser_number].move(constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y)
+                                        sound.stop()
+                                        boom_sound = open("boom.wav", "rb")
+                                        sound.play(boom_sound)
+                                        show_alien()
+                                        show_alien()
+                                        score = score + 1
+
+
+
         # render sprites
-        game.render_sprites(lasers + [ship] + [alien])
+        game.render_sprites(aliens + lasers + [ship])
         game.tick()
+
 
 
 if __name__ == "__main__":
