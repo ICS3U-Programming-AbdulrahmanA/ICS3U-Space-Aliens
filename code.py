@@ -255,15 +255,13 @@ def game_scene():
         if keys & ugame.K_SELECT:
             pass
         if keys & ugame.K_RIGHT:
-            if ship.x < (constants.SCREEN_X - constants.SPRITE_SIZE):
-                ship.move((ship.x + constants.SPRITE_MOVEMENT_SPEED), ship.y)
-            else:
-                ship.move((constants.SCREEN_X - constants.SPRITE_SIZE), ship.y)
+            ship.move((ship.x + constants.SPRITE_MOVEMENT_SPEED), ship.y)
+            if ship.x > constants.SCREEN_X:
+                ship.move(-constants.SPRITE_SIZE, ship.y)
         if keys & ugame.K_LEFT:
-            if ship.x > 0:
-                ship.move((ship.x - constants.SPRITE_MOVEMENT_SPEED), ship.y)
-            else:
-                ship.move(0, ship.y)
+            ship.move((ship.x - constants.SPRITE_MOVEMENT_SPEED), ship.y)
+            if ship.x < -constants.SPRITE_SIZE:
+                ship.move(constants.SCREEN_X, ship.y)
         if keys & ugame.K_UP != 0:
             pass
         if keys & ugame.K_DOWN != 0:
